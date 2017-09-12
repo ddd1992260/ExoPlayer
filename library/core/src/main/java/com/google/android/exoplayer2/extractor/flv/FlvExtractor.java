@@ -181,8 +181,10 @@ public final class FlvExtractor implements Extractor, SeekMap {
     headerBuffer.setPosition(0);
     headerBuffer.skipBytes(4);
     int flags = headerBuffer.readUnsignedByte();
-    boolean hasAudio = (flags & 0x04) != 0;
-    boolean hasVideo = (flags & 0x01) != 0;
+//    boolean hasAudio = (flags & 0x04) != 0;
+//    boolean hasVideo = (flags & 0x01) != 0;
+    boolean hasAudio = true;
+    boolean hasVideo = true;
     if (hasAudio && audioReader == null) {
       audioReader = new AudioTagPayloadReader(
           extractorOutput.track(TAG_TYPE_AUDIO, C.TRACK_TYPE_AUDIO));

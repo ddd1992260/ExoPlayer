@@ -87,7 +87,6 @@ public final class ExtractorMediaSource implements MediaSource, ExtractorMediaPe
   private final Timeline.Period period;
   private final String customCacheKey;
   private final int continueLoadingCheckIntervalBytes;
-
   private MediaSource.Listener sourceListener;
   private long timelineDurationUs;
   private boolean timelineIsSeekable;

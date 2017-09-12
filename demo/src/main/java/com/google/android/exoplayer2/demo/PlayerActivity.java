@@ -24,6 +24,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -48,7 +49,8 @@ import com.google.android.exoplayer2.drm.FrameworkMediaCrypto;
 import com.google.android.exoplayer2.drm.FrameworkMediaDrm;
 import com.google.android.exoplayer2.drm.HttpMediaDrmCallback;
 import com.google.android.exoplayer2.drm.UnsupportedDrmException;
-import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
+import com.google.android.exoplayer2.ext.rtmp.RtmpDataSourceFactory;
+import com.google.android.exoplayer2.extractor.ClientDefaultExtractorsFactory;
 import com.google.android.exoplayer2.mediacodec.MediaCodecRenderer.DecoderInitializationException;
 import com.google.android.exoplayer2.mediacodec.MediaCodecUtil.DecoderQueryException;
 import com.google.android.exoplayer2.source.BehindLiveWindowException;
@@ -121,7 +123,7 @@ public class PlayerActivity extends Activity implements OnClickListener, EventLi
   private DebugTextViewHelper debugViewHelper;
   private boolean inErrorState;
   private TrackGroupArray lastSeenTrackGroupArray;
-
+  private RtmpDataSourceFactory rtmpDataSourceFactory;
   private boolean shouldAutoPlay;
   private int resumeWindow;
   private long resumePosition;
@@ -140,6 +142,7 @@ public class PlayerActivity extends Activity implements OnClickListener, EventLi
     shouldAutoPlay = true;
     clearResumePosition();
     mediaDataSourceFactory = buildDataSourceFactory(true);
+    rtmpDataSourceFactory = new RtmpDataSourceFactory(BANDWIDTH_METER);
     mainHandler = new Handler();
     if (CookieHandler.getDefault() != DEFAULT_COOKIE_MANAGER) {
       CookieHandler.setDefault(DEFAULT_COOKIE_MANAGER);
@@ -370,8 +373,14 @@ public class PlayerActivity extends Activity implements OnClickListener, EventLi
       case C.TYPE_HLS:
         return new HlsMediaSource(uri, mediaDataSourceFactory, mainHandler, eventLogger);
       case C.TYPE_OTHER:
-        return new ExtractorMediaSource(uri, mediaDataSourceFactory, new DefaultExtractorsFactory(),
-            mainHandler, eventLogger);
+        if (uri.getScheme().equals("rtmp")) {
+          return new ExtractorMediaSource(uri, rtmpDataSourceFactory, new ClientDefaultExtractorsFactory(),
+                  mainHandler, eventLogger);
+        } else {
+          return new ExtractorMediaSource(uri, mediaDataSourceFactory, new ClientDefaultExtractorsFactory(),
+                  mainHandler, eventLogger);
+
+        }
       default: {
         throw new IllegalStateException("Unsupported type: " + type);
       }
